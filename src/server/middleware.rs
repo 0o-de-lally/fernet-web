@@ -38,16 +38,22 @@ impl RequestMiddleware {
     pub fn log_completion(&self, status_code: u16, path: &str, method: &str) {
         if let Some(start_time) = self.start_time {
             let elapsed = start_time.elapsed();
-            
+
             if status_code >= 400 {
                 warn!(
                     "Request completed: {} {} - {} ({:.2}ms)",
-                    method, path, status_code, elapsed.as_secs_f64() * 1000.0
+                    method,
+                    path,
+                    status_code,
+                    elapsed.as_secs_f64() * 1000.0
                 );
             } else {
                 info!(
-                    "Request completed: {} {} - {} ({:.2}ms)", 
-                    method, path, status_code, elapsed.as_secs_f64() * 1000.0
+                    "Request completed: {} {} - {} ({:.2}ms)",
+                    method,
+                    path,
+                    status_code,
+                    elapsed.as_secs_f64() * 1000.0
                 );
             }
         }
@@ -94,7 +100,7 @@ mod tests {
     fn test_clone() {
         let mut middleware = RequestMiddleware::new();
         middleware.start_timing();
-        
+
         let cloned = middleware.clone();
         assert!(cloned.start_time.is_some());
     }

@@ -50,7 +50,7 @@ async fn create_benchmark_crypto_service() -> CryptoService {
 /// Benchmark crypto service initialization
 fn bench_crypto_service_creation(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
-    
+
     c.bench_function("crypto_service_creation", |b| {
         b.iter(|| {
             let _service = black_box(rt.block_on(create_benchmark_crypto_service()));
@@ -62,7 +62,7 @@ fn bench_crypto_service_creation(c: &mut Criterion) {
 fn bench_rsa_key_validation(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     c.bench_function("rsa_key_validation", |b| {
         b.iter(|| {
             let result = crypto_service.validate_key();
@@ -75,16 +75,16 @@ fn bench_rsa_key_validation(c: &mut Criterion) {
 fn bench_rsa_decrypt_symmetric_key(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     // Test different encrypted key sizes (base64 encoded)
     let test_keys = vec![
         ("small", "dGVzdGtleTE="), // "testkey1" base64 encoded
         ("medium", "dGhpc2lzYWxvbmdlcnRlc3RrZXlmb3JiZW5jaG1hcmtpbmc="), // longer test key
         ("large", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), // Very long key (will likely fail but tests performance)
     ];
-    
+
     let mut group = c.benchmark_group("rsa_decrypt_symmetric_key");
-    
+
     for (name, key) in test_keys {
         group.bench_with_input(BenchmarkId::new("decrypt", name), &key, |b, key| {
             b.iter(|| {
@@ -94,14 +94,14 @@ fn bench_rsa_decrypt_symmetric_key(c: &mut Criterion) {
             });
         });
     }
-    
+
     group.finish();
 }
 
 /// Benchmark Fernet key creation and validation
 fn bench_fernet_key_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("fernet_key_operations");
-    
+
     // Benchmark key creation from bytes
     let key_bytes = [42u8; 32];
     group.bench_function("create_from_bytes", |b| {
@@ -110,7 +110,7 @@ fn bench_fernet_key_operations(c: &mut Criterion) {
             black_box(result)
         });
     });
-    
+
     // Benchmark key string generation
     let fernet_key = FernetKey::from_bytes(&key_bytes).unwrap();
     group.bench_function("get_key_string", |b| {
@@ -119,7 +119,7 @@ fn bench_fernet_key_operations(c: &mut Criterion) {
             black_box(key_string)
         });
     });
-    
+
     // Benchmark key bytes recovery
     group.bench_function("get_key_bytes", |b| {
         b.iter(|| {
@@ -127,7 +127,7 @@ fn bench_fernet_key_operations(c: &mut Criterion) {
             black_box(result)
         });
     });
-    
+
     group.finish();
 }
 
@@ -135,7 +135,7 @@ fn bench_fernet_key_operations(c: &mut Criterion) {
 fn bench_fernet_payload_decryption(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     // Test payloads of different sizes
     let payload_sizes = vec![
         ("1KB", 1024),
@@ -143,15 +143,15 @@ fn bench_fernet_payload_decryption(c: &mut Criterion) {
         ("100KB", 100 * 1024),
         ("1MB", 1024 * 1024),
     ];
-    
+
     let mut group = c.benchmark_group("fernet_payload_decryption");
-    
+
     for (name, size) in payload_sizes {
         group.throughput(Throughput::Bytes(size as u64));
-        
+
         let test_key = [42u8; 32];
         let test_payload = "test_token_".repeat(size / 11); // Approximate size
-        
+
         group.bench_with_input(
             BenchmarkId::new("decrypt", name),
             &(test_key, test_payload),
@@ -164,7 +164,7 @@ fn bench_fernet_payload_decryption(c: &mut Criterion) {
             },
         );
     }
-    
+
     group.finish();
 }
 
@@ -172,12 +172,12 @@ fn bench_fernet_payload_decryption(c: &mut Criterion) {
 fn bench_concurrent_operations(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = std::sync::Arc::new(rt.block_on(create_benchmark_crypto_service()));
-    
+
     let mut group = c.benchmark_group("concurrent_operations");
-    
+
     // Benchmark concurrent RSA operations
     let concurrency_levels = vec![1, 2, 4, 8, 16];
-    
+
     for concurrency in concurrency_levels {
         group.bench_with_input(
             BenchmarkId::new("rsa_concurrent", concurrency),
@@ -186,7 +186,7 @@ fn bench_concurrent_operations(c: &mut Criterion) {
                 b.iter(|| {
                     rt.block_on(async {
                         let mut handles = Vec::new();
-                        
+
                         for i in 0..concurrency {
                             let service = std::sync::Arc::clone(&crypto_service);
                             let handle = tokio::spawn(async move {
@@ -197,7 +197,7 @@ fn bench_concurrent_operations(c: &mut Criterion) {
                             });
                             handles.push(handle);
                         }
-                        
+
                         // Wait for all operations to complete
                         for handle in handles {
                             let _ = handle.await;
@@ -207,7 +207,7 @@ fn bench_concurrent_operations(c: &mut Criterion) {
             },
         );
     }
-    
+
     group.finish();
 }
 
@@ -215,7 +215,7 @@ fn bench_concurrent_operations(c: &mut Criterion) {
 fn bench_memory_usage(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     c.bench_function("memory_pattern_rsa_decrypt", |b| {
         b.iter(|| {
             // This benchmark helps identify memory allocation patterns
@@ -223,7 +223,7 @@ fn bench_memory_usage(c: &mut Criterion) {
             black_box(result)
         });
     });
-    
+
     c.bench_function("memory_pattern_fernet_decrypt", |b| {
         b.iter(|| {
             let key = [42u8; 32];
@@ -237,9 +237,9 @@ fn bench_memory_usage(c: &mut Criterion) {
 fn bench_error_handling(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     let mut group = c.benchmark_group("error_handling");
-    
+
     // Benchmark RSA error handling
     group.bench_function("rsa_invalid_input", |b| {
         b.iter(|| {
@@ -247,8 +247,8 @@ fn bench_error_handling(c: &mut Criterion) {
             black_box(result) // Should be an error
         });
     });
-    
-    // Benchmark Fernet error handling  
+
+    // Benchmark Fernet error handling
     group.bench_function("fernet_invalid_key_size", |b| {
         b.iter(|| {
             let invalid_key = [0u8; 16]; // Wrong size
@@ -256,7 +256,7 @@ fn bench_error_handling(c: &mut Criterion) {
             black_box(result) // Should be an error
         });
     });
-    
+
     // Benchmark Fernet error handling with valid key but invalid token
     group.bench_function("fernet_invalid_token", |b| {
         b.iter(|| {
@@ -265,7 +265,7 @@ fn bench_error_handling(c: &mut Criterion) {
             black_box(result) // Should be an error
         });
     });
-    
+
     group.finish();
 }
 
@@ -273,7 +273,7 @@ fn bench_error_handling(c: &mut Criterion) {
 fn bench_metrics_collection(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     c.bench_function("metrics_collection", |b| {
         b.iter(|| {
             let metrics = crypto_service.get_metrics();
@@ -286,7 +286,7 @@ fn bench_metrics_collection(c: &mut Criterion) {
 fn bench_public_key_operations(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     c.bench_function("get_public_key_pem", |b| {
         b.iter(|| {
             let public_key = crypto_service.get_public_key_pem();
@@ -299,14 +299,14 @@ fn bench_public_key_operations(c: &mut Criterion) {
 fn bench_scalability(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let crypto_service = rt.block_on(create_benchmark_crypto_service());
-    
+
     let mut group = c.benchmark_group("scalability");
-    
+
     // Set longer measurement time for scalability tests
     group.measurement_time(Duration::from_secs(10));
-    
+
     let operation_counts = vec![1, 10, 100, 1000];
-    
+
     for count in operation_counts {
         group.bench_with_input(
             BenchmarkId::new("sequential_operations", count),
@@ -325,7 +325,7 @@ fn bench_scalability(c: &mut Criterion) {
             },
         );
     }
-    
+
     group.finish();
 }
 
@@ -336,7 +336,7 @@ criterion_group!(
         .measurement_time(Duration::from_secs(5))
         .sample_size(100)
         .warm_up_time(Duration::from_secs(2));
-    targets = 
+    targets =
         bench_crypto_service_creation,
         bench_rsa_key_validation,
         bench_rsa_decrypt_symmetric_key,

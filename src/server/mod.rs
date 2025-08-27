@@ -80,9 +80,7 @@ impl FernetWebServer {
         info!("Initializing Fernet web server with config: {:?}", config);
 
         // Initialize cryptographic service
-        let crypto_service = Arc::new(
-            CryptoService::new(&config.rsa_private_key_path).await?
-        );
+        let crypto_service = Arc::new(CryptoService::new(&config.rsa_private_key_path).await?);
 
         // Validate crypto service
         crypto_service.validate_key()?;
@@ -117,7 +115,7 @@ impl FernetWebServer {
     #[instrument(level = "info", name = "server_start", skip(self))]
     pub async fn start(self) -> Result<()> {
         let bind_addr = self.config.bind_addr;
-        
+
         info!("Starting Fernet web server on {}", bind_addr);
 
         // Create TCP listener
@@ -191,24 +189,13 @@ impl FernetWebServer {
 
         // Route requests to appropriate handlers
         let response = match (method, path) {
-            (&Method::POST, "/decrypt") => {
-                self.decrypt_handler.handle(request, remote_addr).await
-            }
-            (&Method::GET, "/health") => {
-                self.handle_health_check().await
-            }
-            (&Method::GET, "/metrics") => {
-                self.handle_metrics().await
-            }
-            (&Method::GET, "/public-key") => {
-                self.handle_public_key().await
-            }
+            (&Method::POST, "/decrypt") => self.decrypt_handler.handle(request, remote_addr).await,
+            (&Method::GET, "/health") => self.handle_health_check().await,
+            (&Method::GET, "/metrics") => self.handle_metrics().await,
+            (&Method::GET, "/public-key") => self.handle_public_key().await,
             _ => {
                 warn!("Unknown endpoint: {} {}", method, path);
-                Ok(self.create_error_response(
-                    StatusCode::NOT_FOUND,
-                    "Not found".to_string(),
-                ))
+                Ok(self.create_error_response(StatusCode::NOT_FOUND, "Not found".to_string()))
             }
         };
 
@@ -218,13 +205,21 @@ impl FernetWebServer {
             Ok(resp) => resp,
             Err(e) => {
                 if e.is_critical() {
-                    error!("Critical error handling request from {}: {}", remote_addr, e);
+                    error!(
+                        "Critical error handling request from {}: {}",
+                        remote_addr, e
+                    );
                 } else {
-                    warn!("Request error from {}: {}", remote_addr, e.internal_message());
+                    warn!(
+                        "Request error from {}: {}",
+                        remote_addr,
+                        e.internal_message()
+                    );
                 }
 
                 self.create_error_response(
-                    StatusCode::from_u16(e.status_code()).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                    StatusCode::from_u16(e.status_code())
+                        .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
                     e.client_message().to_string(),
                 )
             }
@@ -244,7 +239,7 @@ impl FernetWebServer {
     /// Returns JSON health status response
     async fn handle_health_check(&self) -> Result<Response<Full<Bytes>>> {
         let crypto_metrics = self.crypto_service.get_metrics();
-        
+
         let health_status = serde_json::json!({
             "status": "healthy",
             "version": crate::VERSION,
@@ -279,7 +274,7 @@ impl FernetWebServer {
     /// Returns Prometheus-formatted metrics response
     async fn handle_metrics(&self) -> Result<Response<Full<Bytes>>> {
         let crypto_metrics = self.crypto_service.get_metrics();
-        
+
         let prometheus_metrics = format!(
             "# HELP fernet_rsa_operations_total Total RSA operations performed\n\
              # TYPE fernet_rsa_operations_total counter\n\
@@ -391,19 +386,16 @@ pub async fn start_server(config: ServerConfig) -> Result<()> {
 // Implement From<hyper::http::Error> for convenient error handling
 impl From<hyper::http::Error> for FernetWebError {
     fn from(err: hyper::http::Error) -> Self {
-        Self::server_error(
-            format!("HTTP error: {}", err),
-            Some(Box::new(err)),
-        )
+        Self::server_error(format!("HTTP error: {}", err), Some(Box::new(err)))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
     use std::net::{IpAddr, Ipv4Addr};
     use tempfile::NamedTempFile;
-    use std::io::Write;
 
     // Test RSA key for development/testing
     const TEST_RSA_KEY: &str = r#"-----BEGIN RSA PRIVATE KEY-----
@@ -419,7 +411,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     async fn create_test_server_config() -> Result<ServerConfig> {
         let mut temp_file = NamedTempFile::new().unwrap();
         write!(temp_file, "{}", TEST_RSA_KEY).unwrap();
-        
+
         let config = ServerConfig {
             bind_addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0), // Use port 0 for testing
             rsa_private_key_path: temp_file.path().to_path_buf(),
@@ -430,7 +422,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             enable_metrics: false,
             enable_health_check: true,
         };
-        
+
         Ok(config)
     }
 
@@ -440,7 +432,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
         // For now, server creation will use stub crypto service
         // let server = FernetWebServer::new(config).await;
         // assert!(server.is_ok());
-        
+
         // Just test that config creation works
         assert!(config.bind_addr.port() == 0); // Test port
     }
@@ -461,7 +453,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             "error": "test error",
             "status": 400,
         });
-        
+
         let body_string = serde_json::to_string(&error_json).unwrap();
         assert!(body_string.contains("test error"));
         assert!(body_string.contains("400"));
@@ -475,7 +467,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
              fernet_rsa_operations_total {}\n",
             42
         );
-        
+
         assert!(metrics_text.contains("fernet_rsa_operations_total 42"));
         assert!(metrics_text.contains("# HELP"));
         assert!(metrics_text.contains("# TYPE"));
@@ -492,7 +484,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             .unwrap_err()
             .into();
         let fernet_error: FernetWebError = http_error.into();
-        
+
         assert_eq!(fernet_error.status_code(), 500);
         assert_eq!(fernet_error.client_message(), "Internal server error");
     }

@@ -76,7 +76,7 @@ async fn main() {
 
     // Start the server
     info!("Starting server on {}", config.bind_addr);
-    
+
     tokio::select! {
         // Server main loop
         result = start_server(config) => {
@@ -95,7 +95,7 @@ async fn main() {
                 }
             }
         }
-        
+
         // Graceful shutdown signal
         _ = shutdown_signal => {
             info!("Received shutdown signal, stopping server...");
@@ -146,10 +146,10 @@ fn setup_logging(config: &ServerConfig) -> Result<(), Box<dyn std::error::Error>
                     .with_span_list(true)
                     .with_target(true)
                     .with_thread_ids(true)
-                    .with_thread_names(true)
+                    .with_thread_names(true),
             )
             .init();
-            
+
         info!("Initialized structured JSON logging for production");
     } else {
         // Development: Pretty-printed with colors
@@ -160,10 +160,10 @@ fn setup_logging(config: &ServerConfig) -> Result<(), Box<dyn std::error::Error>
                     .pretty()
                     .with_target(true)
                     .with_thread_ids(false)
-                    .with_thread_names(false)
+                    .with_thread_names(false),
             )
             .init();
-            
+
         info!("Initialized pretty-printed logging for development");
     }
 
@@ -215,19 +215,22 @@ async fn setup_shutdown_handler() {
 /// version and build information.
 fn _print_version_info() {
     println!("Fernet Web Server v{}", fernet_web::VERSION);
-    println!("Built with Rust {}", option_env!("RUSTC_VERSION").unwrap_or("unknown"));
+    println!(
+        "Built with Rust {}",
+        option_env!("RUSTC_VERSION").unwrap_or("unknown")
+    );
     println!("Target: {}", option_env!("TARGET").unwrap_or("unknown"));
-    
+
     #[cfg(debug_assertions)]
     println!("Build: Debug");
-    
+
     #[cfg(not(debug_assertions))]
     println!("Build: Release");
-    
+
     if let Ok(git_hash) = std::env::var("GIT_HASH") {
         println!("Git Hash: {}", git_hash);
     }
-    
+
     if let Ok(build_date) = std::env::var("BUILD_DATE") {
         println!("Build Date: {}", build_date);
     }
@@ -246,18 +249,35 @@ fn _display_startup_info(config: &ServerConfig) {
     info!("Max Payload Size: {} bytes", config.max_payload_size);
     info!("Request Timeout: {}ms", config.request_timeout_ms);
     info!("Worker Threads: {}", config.get_worker_threads());
-    info!("Health Check: {}", if config.enable_health_check { "enabled" } else { "disabled" });
-    info!("Metrics: {}", if config.enable_metrics { "enabled" } else { "disabled" });
-    
+    info!(
+        "Health Check: {}",
+        if config.enable_health_check {
+            "enabled"
+        } else {
+            "disabled"
+        }
+    );
+    info!(
+        "Metrics: {}",
+        if config.enable_metrics {
+            "enabled"
+        } else {
+            "disabled"
+        }
+    );
+
     if config.enable_health_check {
         info!("Health endpoint: http://{}/health", config.bind_addr);
     }
-    
+
     if config.enable_metrics {
         info!("Metrics endpoint: http://{}/metrics", config.bind_addr);
     }
-    
-    info!("Public key endpoint: http://{}/public-key", config.bind_addr);
+
+    info!(
+        "Public key endpoint: http://{}/public-key",
+        config.bind_addr
+    );
     info!("Decrypt endpoint: http://{}/decrypt", config.bind_addr);
     info!("=========================================");
 }
@@ -269,18 +289,21 @@ fn _display_startup_info(config: &ServerConfig) {
 fn _setup_panic_handler() {
     std::panic::set_hook(Box::new(|panic_info| {
         let backtrace = std::backtrace::Backtrace::capture();
-        
+
         error!("PANIC occurred: {}", panic_info);
         error!("Backtrace:\n{}", backtrace);
-        
+
         // In production, we might want to send this to an error reporting service
-        if std::env::var("ENVIRONMENT").map(|e| e == "production").unwrap_or(false) {
+        if std::env::var("ENVIRONMENT")
+            .map(|e| e == "production")
+            .unwrap_or(false)
+        {
             warn!("Server panicked in production - this indicates a serious bug");
         }
-        
+
         // Give logging a chance to flush
         std::thread::sleep(std::time::Duration::from_millis(100));
-        
+
         process::exit(4); // Exit code 4 for panic
     }));
 }
@@ -300,7 +323,10 @@ fn _validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
                 if let Ok(available_kb) = kb_str.parse::<u64>() {
                     let available_mb = available_kb / 1024;
                     if available_mb < 100 {
-                        warn!("Low available memory: {}MB - server may experience performance issues", available_mb);
+                        warn!(
+                            "Low available memory: {}MB - server may experience performance issues",
+                            available_mb
+                        );
                     } else {
                         info!("Available memory: {}MB", available_mb);
                     }
@@ -320,7 +346,10 @@ fn _validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
     match std::net::TcpListener::bind("127.0.0.1:0") {
         Ok(listener) => {
             let local_addr = listener.local_addr()?;
-            info!("Network stack validated - test bind successful on {}", local_addr);
+            info!(
+                "Network stack validated - test bind successful on {}",
+                local_addr
+            );
             drop(listener);
         }
         Err(e) => {

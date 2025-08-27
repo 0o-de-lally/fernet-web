@@ -71,7 +71,7 @@ pub mod server;
 
 // Re-export commonly used types for convenience
 pub use error::{FernetWebError, Result};
-pub use server::{ServerConfig, start_server};
+pub use server::{start_server, ServerConfig};
 
 /// Version information for the library
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -83,7 +83,7 @@ pub const DEFAULT_PORT: u16 = 7999;
 pub const DEFAULT_BIND_ADDR: &str = "0.0.0.0";
 
 /// Maximum payload size in bytes (16MB to prevent DoS attacks)
-/// 
+///
 /// This limit prevents memory exhaustion attacks while allowing
 /// reasonable payload sizes for most use cases.
 pub const MAX_PAYLOAD_SIZE: usize = 16 * 1024 * 1024;
@@ -115,11 +115,11 @@ mod tests {
         assert_eq!(DEFAULT_PORT, 7999); // Matches README
     }
 
-    #[test] 
+    #[test]
     fn test_version_is_valid() {
         // Ensure version string is not empty
         assert!(!VERSION.is_empty());
-        
+
         // Basic semver validation (should have at least one dot)
         assert!(VERSION.contains('.'));
     }

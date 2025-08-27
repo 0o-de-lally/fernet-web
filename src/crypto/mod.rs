@@ -43,8 +43,14 @@ impl CryptoService {
     }
 
     /// Decrypt a Fernet-encrypted payload (stub)
-    pub async fn decrypt_payload(&self, symmetric_key: &[u8], encrypted_payload: &str) -> Result<Vec<u8>> {
-        self.fernet_handler.decrypt_payload(symmetric_key, encrypted_payload).await
+    pub async fn decrypt_payload(
+        &self,
+        symmetric_key: &[u8],
+        encrypted_payload: &str,
+    ) -> Result<Vec<u8>> {
+        self.fernet_handler
+            .decrypt_payload(symmetric_key, encrypted_payload)
+            .await
     }
 
     /// Get RSA public key in PEM format (stub)

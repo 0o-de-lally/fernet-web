@@ -66,7 +66,7 @@ impl DecryptHandler {
     /// symmetric-key-uuid: <uuid>
     /// validator-hotkey: <hotkey>
     /// miner-hotkey: <hotkey>
-    /// 
+    ///
     /// <fernet-encrypted-payload-bytes>
     /// ```
     ///
@@ -125,9 +125,7 @@ impl DecryptHandler {
 
         if body_bytes.is_empty() {
             warn!("Empty payload from {}", remote_addr);
-            return Err(FernetWebError::request_error(
-                "Empty payload".to_string(),
-            ));
+            return Err(FernetWebError::request_error("Empty payload".to_string()));
         }
 
         // Convert body bytes to string for Fernet token processing
@@ -137,7 +135,10 @@ impl DecryptHandler {
         })?;
 
         // Step 1: Decrypt the symmetric key using RSA
-        debug!("Decrypting symmetric key with UUID: {}", request_headers.symmetric_key_uuid);
+        debug!(
+            "Decrypting symmetric key with UUID: {}",
+            request_headers.symmetric_key_uuid
+        );
         let symmetric_key = self
             .crypto_service
             .decrypt_symmetric_key(&request_headers.symmetric_key_uuid)
@@ -210,7 +211,11 @@ impl DecryptHandler {
     ///
     /// ## Returns
     /// Returns header value as string or error if missing/invalid
-    fn get_required_header<'a>(&self, headers: &'a HeaderMap, header_name: &str) -> Result<&'a str> {
+    fn get_required_header<'a>(
+        &self,
+        headers: &'a HeaderMap,
+        header_name: &str,
+    ) -> Result<&'a str> {
         headers
             .get(header_name)
             .ok_or_else(|| {
@@ -265,7 +270,8 @@ impl DecryptHandler {
 
         // Additional validation: check for basic alphanumeric/base64 characters
         let valid_chars = |s: &str| {
-            s.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == '+' || c == '/')
+            s.chars()
+                .all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == '+' || c == '/')
         };
 
         if !valid_chars(symmetric_key_uuid) {
@@ -363,7 +369,8 @@ impl HandlerRegistry {
     /// ## Parameters
     /// - `handler`: Decrypt handler instance to register
     pub fn register_decrypt_handler(&mut self, handler: DecryptHandler) {
-        self.routes.insert("POST:/decrypt".to_string(), "decrypt".to_string());
+        self.routes
+            .insert("POST:/decrypt".to_string(), "decrypt".to_string());
         self.decrypt_handler = Some(handler);
     }
 
@@ -413,11 +420,11 @@ impl Default for HandlerRegistry {
 mod tests {
     use super::*;
     use crate::crypto::CryptoService;
-    use hyper::HeaderMap;
     use http::{HeaderName, HeaderValue};
+    use hyper::HeaderMap;
+    use std::io::Write;
     use std::str::FromStr;
     use tempfile::NamedTempFile;
-    use std::io::Write;
 
     const TEST_RSA_KEY: &str = r#"-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6
@@ -432,7 +439,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     async fn create_test_crypto_service() -> Arc<CryptoService> {
         let mut temp_file = NamedTempFile::new().unwrap();
         write!(temp_file, "{}", TEST_RSA_KEY).unwrap();
-        
+
         // For testing, we'll create a crypto service that uses stubs
         Arc::new(CryptoService::new(temp_file.path()).await.unwrap())
     }
@@ -441,7 +448,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     async fn test_decrypt_handler_creation() {
         let crypto_service = create_test_crypto_service().await;
         let handler = DecryptHandler::new(crypto_service);
-        
+
         // Just test creation for now
         assert!(format!("{:?}", handler).contains("DecryptHandler"));
     }
@@ -451,7 +458,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
         // Create a dummy crypto service for testing
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let mut headers = HeaderMap::new();
         headers.insert(
             HeaderName::from_str("symmetric-key-uuid").unwrap(),
@@ -468,7 +475,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
 
         let result = handler.extract_request_headers(&headers);
         assert!(result.is_ok());
-        
+
         let headers = result.unwrap();
         assert_eq!(headers.symmetric_key_uuid, "test-uuid-123");
         assert_eq!(headers.validator_hotkey, "validator-key-456");
@@ -479,9 +486,9 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_header_extraction_missing_header() {
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let headers = HeaderMap::new(); // Empty headers
-        
+
         let result = handler.extract_request_headers(&headers);
         assert!(result.is_err());
     }
@@ -490,7 +497,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_header_validation_empty_values() {
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let result = handler.validate_header_formats("", "validator", "miner");
         assert!(result.is_err());
     }
@@ -499,7 +506,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_header_validation_too_long() {
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let long_string = "a".repeat(300);
         let result = handler.validate_header_formats(&long_string, "validator", "miner");
         assert!(result.is_err());
@@ -509,7 +516,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_header_validation_invalid_chars() {
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let result = handler.validate_header_formats("uuid<>", "validator", "miner");
         assert!(result.is_err());
     }
@@ -518,7 +525,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_header_validation_success() {
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         let result = handler.validate_header_formats("uuid-123", "validator_key", "miner+key");
         assert!(result.is_ok());
     }
@@ -527,10 +534,10 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
     fn test_handler_registry() {
         let mut registry = HandlerRegistry::new();
         assert_eq!(registry.get_routes().len(), 0);
-        
+
         let crypto_service = tokio_test::block_on(create_test_crypto_service());
         let handler = DecryptHandler::new(crypto_service);
-        
+
         registry.register_decrypt_handler(handler);
         assert_eq!(registry.get_routes().len(), 1);
         assert!(registry.get_routes().contains(&"POST:/decrypt".to_string()));
@@ -549,7 +556,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             validator_hotkey: "validator".to_string(),
             miner_hotkey: "miner".to_string(),
         };
-        
+
         let debug_str = format!("{:?}", headers);
         assert!(debug_str.contains("test-uuid"));
         assert!(debug_str.contains("validator"));
@@ -563,7 +570,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             validator_hotkey: "validator".to_string(),
             miner_hotkey: "miner".to_string(),
         };
-        
+
         let cloned = headers.clone();
         assert_eq!(cloned.symmetric_key_uuid, headers.symmetric_key_uuid);
         assert_eq!(cloned.validator_hotkey, headers.validator_hotkey);

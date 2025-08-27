@@ -19,7 +19,11 @@ impl FernetDecryptor {
         }
     }
 
-    pub async fn decrypt_payload(&self, symmetric_key: &[u8], encrypted_payload: &str) -> Result<Vec<u8>> {
+    pub async fn decrypt_payload(
+        &self,
+        symmetric_key: &[u8],
+        encrypted_payload: &str,
+    ) -> Result<Vec<u8>> {
         self.operation_count.fetch_add(1, Ordering::Relaxed);
 
         // Validate key length
@@ -65,9 +69,9 @@ impl FernetKey {
     }
 
     pub fn from_string(key_string: String) -> Result<Self> {
-        let decoded = BASE64_URL_SAFE.decode(&key_string).map_err(|e| {
-            FernetWebError::fernet_error(format!("Invalid base64: {}", e), None)
-        })?;
+        let decoded = BASE64_URL_SAFE
+            .decode(&key_string)
+            .map_err(|e| FernetWebError::fernet_error(format!("Invalid base64: {}", e), None))?;
 
         if decoded.len() != 32 {
             return Err(FernetWebError::fernet_error(
@@ -84,9 +88,9 @@ impl FernetKey {
     }
 
     pub fn get_key_bytes(&self) -> Result<Vec<u8>> {
-        BASE64_URL_SAFE.decode(&self.key_string).map_err(|e| {
-            FernetWebError::fernet_error(format!("Failed to decode key: {}", e), None)
-        })
+        BASE64_URL_SAFE
+            .decode(&self.key_string)
+            .map_err(|e| FernetWebError::fernet_error(format!("Failed to decode key: {}", e), None))
     }
 
     #[cfg(test)]
@@ -116,7 +120,7 @@ mod tests {
         let key_bytes = [42u8; 32];
         let key = FernetKey::from_bytes(&key_bytes).unwrap();
         assert_eq!(key.get_key_string().len(), 44);
-        
+
         let recovered = key.get_key_bytes().unwrap();
         assert_eq!(recovered, key_bytes);
     }

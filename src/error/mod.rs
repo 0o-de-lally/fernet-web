@@ -22,7 +22,7 @@
 use thiserror::Error;
 
 /// Result type alias for the Fernet Web library
-/// 
+///
 /// This provides a convenient shorthand for `Result<T, FernetWebError>`
 /// used throughout the codebase for consistent error handling.
 pub type Result<T> = std::result::Result<T, FernetWebError>;
@@ -159,7 +159,10 @@ impl FernetWebError {
     /// ## Performance
     /// This is a zero-allocation operation when source is None
     #[inline]
-    pub fn rsa_error<T>(message: T, source: Option<Box<dyn std::error::Error + Send + Sync>>) -> Self
+    pub fn rsa_error<T>(
+        message: T,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self
     where
         T: Into<String>,
     {
@@ -178,7 +181,10 @@ impl FernetWebError {
     /// ## Performance
     /// This is a zero-allocation operation when source is None
     #[inline]
-    pub fn fernet_error<T>(message: T, source: Option<Box<dyn std::error::Error + Send + Sync>>) -> Self
+    pub fn fernet_error<T>(
+        message: T,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self
     where
         T: Into<String>,
     {
@@ -197,7 +203,10 @@ impl FernetWebError {
     /// ## Performance
     /// This is a zero-allocation operation when source is None
     #[inline]
-    pub fn server_error<T>(message: T, source: Option<Box<dyn std::error::Error + Send + Sync>>) -> Self
+    pub fn server_error<T>(
+        message: T,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self
     where
         T: Into<String>,
     {
@@ -233,7 +242,10 @@ impl FernetWebError {
     /// ## Performance
     /// This is a zero-allocation operation when source is None
     #[inline]
-    pub fn config_error<T>(message: T, source: Option<Box<dyn std::error::Error + Send + Sync>>) -> Self
+    pub fn config_error<T>(
+        message: T,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self
     where
         T: Into<String>,
     {
@@ -252,7 +264,10 @@ impl FernetWebError {
     /// ## Performance
     /// This is a zero-allocation operation when source is None
     #[inline]
-    pub fn internal_error<T>(message: T, source: Option<Box<dyn std::error::Error + Send + Sync>>) -> Self
+    pub fn internal_error<T>(
+        message: T,
+        source: Option<Box<dyn std::error::Error + Send + Sync>>,
+    ) -> Self
     where
         T: Into<String>,
     {
@@ -269,7 +284,7 @@ impl FernetWebError {
     ///
     /// ## Security Considerations
     /// Status codes are chosen to minimize information disclosure:
-    /// - Crypto errors return 401 (Unauthorized) 
+    /// - Crypto errors return 401 (Unauthorized)
     /// - Request errors return 400 (Bad Request)
     /// - Server/Internal errors return 500 (Internal Server Error)
     ///
@@ -302,7 +317,7 @@ impl FernetWebError {
     pub fn client_message(&self) -> &'static str {
         match self {
             Self::RsaError { .. } => "Authentication failed",
-            Self::FernetError { .. } => "Decryption failed", 
+            Self::FernetError { .. } => "Decryption failed",
             Self::RequestError { .. } => "Bad request",
             Self::ServerError { .. } => "Internal server error",
             Self::ConfigError { .. } => "Service unavailable",
@@ -344,7 +359,9 @@ impl FernetWebError {
         match self {
             Self::RequestError { .. } => false, // Expected client errors
             Self::RsaError { .. } | Self::FernetError { .. } => true, // Crypto failures are serious
-            Self::ServerError { .. } | Self::ConfigError { .. } | Self::InternalError { .. } => true,
+            Self::ServerError { .. } | Self::ConfigError { .. } | Self::InternalError { .. } => {
+                true
+            }
         }
     }
 }
@@ -362,10 +379,7 @@ pub trait IntoFernetWebError {
 impl From<std::io::Error> for FernetWebError {
     #[inline]
     fn from(err: std::io::Error) -> Self {
-        Self::server_error(
-            format!("I/O error: {}", err),
-            Some(Box::new(err)),
-        )
+        Self::server_error(format!("I/O error: {}", err), Some(Box::new(err)))
     }
 }
 
@@ -379,10 +393,7 @@ impl From<serde_json::Error> for FernetWebError {
 impl From<hyper::Error> for FernetWebError {
     #[inline]
     fn from(err: hyper::Error) -> Self {
-        Self::server_error(
-            format!("Hyper error: {}", err),
-            Some(Box::new(err)),
-        )
+        Self::server_error(format!("Hyper error: {}", err), Some(Box::new(err)))
     }
 }
 
@@ -402,11 +413,23 @@ mod tests {
     #[test]
     fn test_error_status_codes() {
         assert_eq!(FernetWebError::rsa_error("test", None).status_code(), 401);
-        assert_eq!(FernetWebError::fernet_error("test", None).status_code(), 401);
+        assert_eq!(
+            FernetWebError::fernet_error("test", None).status_code(),
+            401
+        );
         assert_eq!(FernetWebError::request_error("test").status_code(), 400);
-        assert_eq!(FernetWebError::server_error("test", None).status_code(), 500);
-        assert_eq!(FernetWebError::config_error("test", None).status_code(), 500);
-        assert_eq!(FernetWebError::internal_error("test", None).status_code(), 500);
+        assert_eq!(
+            FernetWebError::server_error("test", None).status_code(),
+            500
+        );
+        assert_eq!(
+            FernetWebError::config_error("test", None).status_code(),
+            500
+        );
+        assert_eq!(
+            FernetWebError::internal_error("test", None).status_code(),
+            500
+        );
     }
 
     #[test]
@@ -463,10 +486,11 @@ mod tests {
     #[test]
     fn test_error_chain() {
         use std::error::Error;
-        
+
         let inner_err = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "access denied");
-        let outer_err = FernetWebError::config_error("Failed to load key", Some(Box::new(inner_err)));
-        
+        let outer_err =
+            FernetWebError::config_error("Failed to load key", Some(Box::new(inner_err)));
+
         assert_eq!(outer_err.status_code(), 500);
         assert!(outer_err.source().is_some());
     }

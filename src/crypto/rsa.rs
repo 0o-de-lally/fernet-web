@@ -19,7 +19,8 @@ impl RsaKeyExchange {
     /// Create a new RSA key exchange handler (stub)
     pub fn new_stub() -> Self {
         Self {
-            public_key_pem: "-----BEGIN PUBLIC KEY-----\nSTUB_KEY\n-----END PUBLIC KEY-----".to_string(),
+            public_key_pem: "-----BEGIN PUBLIC KEY-----\nSTUB_KEY\n-----END PUBLIC KEY-----"
+                .to_string(),
             operation_count: AtomicU64::new(0),
         }
     }
@@ -30,9 +31,9 @@ impl RsaKeyExchange {
         self.operation_count.fetch_add(1, Ordering::Relaxed);
 
         // Simple base64 decode as stub
-        BASE64.decode(encrypted_key).map_err(|e| {
-            FernetWebError::request_error(format!("Invalid base64 encoding: {}", e))
-        })
+        BASE64
+            .decode(encrypted_key)
+            .map_err(|e| FernetWebError::request_error(format!("Invalid base64 encoding: {}", e)))
     }
 
     /// Get the public key in PEM format
@@ -78,12 +79,12 @@ mod tests {
     #[tokio::test]
     async fn test_rsa_key_exchange() {
         let rsa_handler = RsaKeyExchange::new_stub();
-        
+
         // Test valid base64
         let result = rsa_handler.decrypt_symmetric_key("dGVzdA==").await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), b"test");
-        
+
         // Test invalid base64
         let result = rsa_handler.decrypt_symmetric_key("invalid!").await;
         assert!(result.is_err());
@@ -93,7 +94,7 @@ mod tests {
     fn test_public_key() {
         let public_key = RsaPublicKey::from_pem("test_pem".to_string());
         assert_eq!(public_key.to_pem(), "test_pem");
-        
+
         let result = public_key.encrypt(b"test");
         assert!(result.is_ok());
     }

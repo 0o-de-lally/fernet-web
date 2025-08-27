@@ -20,10 +20,10 @@
 
 use crate::error::{FernetWebError, Result};
 use clap::Parser;
-use serde::{Deserialize, Serialize, Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use tracing::{Level, metadata::ParseLevelError};
+use tracing::{metadata::ParseLevelError, Level};
 
 /// Wrapper for tracing::Level to handle serialization/deserialization
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -88,7 +88,7 @@ impl<'de> Deserialize<'de> for LogLevel {
 /// ## Performance Settings
 /// - Bind address controls network interface and port
 /// - Log level affects performance (DEBUG is slower than INFO)
-/// 
+///
 /// ## Security Settings  
 /// - RSA private key path must point to a secure key file
 /// - Recommended to use strong file permissions (600) on key files
@@ -297,7 +297,7 @@ impl ServerConfig {
     /// Returns configured `ServerConfig` or parsing error
     pub fn from_env() -> Result<Self> {
         let mut config = Self::default();
-        
+
         // Load from environment variables
         if let Ok(bind_addr) = std::env::var("FERNET_WEB_BIND_ADDR") {
             config.bind_addr = bind_addr.parse().map_err(|e| {
@@ -461,14 +461,13 @@ impl ServerConfig {
     /// ## Returns
     /// Optimal worker thread count for this system
     pub fn get_worker_threads(&self) -> usize {
-        self.worker_threads
-            .unwrap_or_else(|| {
-                // Default to 2x CPU count for I/O-bound workloads
-                std::thread::available_parallelism()
-                    .map(|n| n.get() * 2)
-                    .unwrap_or(4)
-                    .min(16) // Cap at 16 threads to prevent excessive context switching
-            })
+        self.worker_threads.unwrap_or_else(|| {
+            // Default to 2x CPU count for I/O-bound workloads
+            std::thread::available_parallelism()
+                .map(|n| n.get() * 2)
+                .unwrap_or(4)
+                .min(16) // Cap at 16 threads to prevent excessive context switching
+        })
     }
 
     /// Check if the server should enable TLS
@@ -480,7 +479,9 @@ impl ServerConfig {
     /// Returns `true` if TLS should be enabled
     pub fn should_enable_tls(&self) -> bool {
         // For now, TLS is not implemented but this provides the interface
-        std::env::var("ENABLE_TLS").map(|v| v == "true").unwrap_or(false)
+        std::env::var("ENABLE_TLS")
+            .map(|v| v == "true")
+            .unwrap_or(false)
     }
 }
 
@@ -512,14 +513,18 @@ mod tests {
 
     fn create_test_key_file() -> NamedTempFile {
         let mut temp_file = NamedTempFile::new().unwrap();
-        write!(temp_file, "-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----").unwrap();
+        write!(
+            temp_file,
+            "-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----"
+        )
+        .unwrap();
         temp_file
     }
 
     #[test]
     fn test_default_config() {
         let config = ServerConfig::default();
-        
+
         assert_eq!(config.bind_addr.port(), 7999);
         assert_eq!(config.log_level, LogLevel::from(Level::INFO));
         assert_eq!(config.max_payload_size, crate::MAX_PAYLOAD_SIZE);
@@ -532,7 +537,7 @@ mod tests {
     fn test_config_validation_missing_key_file() {
         let mut config = ServerConfig::default();
         config.rsa_private_key_path = PathBuf::from("/nonexistent/key.pem");
-        
+
         let result = config.validate();
         assert!(result.is_err());
     }
@@ -542,7 +547,7 @@ mod tests {
         let key_file = create_test_key_file();
         let mut config = ServerConfig::default();
         config.rsa_private_key_path = key_file.path().to_path_buf();
-        
+
         let result = config.validate();
         assert!(result.is_ok());
     }
@@ -553,7 +558,7 @@ mod tests {
         let mut config = ServerConfig::default();
         config.rsa_private_key_path = key_file.path().to_path_buf();
         config.max_payload_size = 0;
-        
+
         let result = config.validate();
         assert!(result.is_err());
     }
@@ -564,7 +569,7 @@ mod tests {
         let mut config = ServerConfig::default();
         config.rsa_private_key_path = key_file.path().to_path_buf();
         config.request_timeout_ms = 0;
-        
+
         let result = config.validate();
         assert!(result.is_err());
     }
@@ -573,7 +578,7 @@ mod tests {
     fn test_worker_threads_calculation() {
         let config = ServerConfig::default();
         let worker_count = config.get_worker_threads();
-        
+
         // Should be at least 4 (default minimum)
         assert!(worker_count >= 4);
         // Should be capped at 16
@@ -584,24 +589,24 @@ mod tests {
     fn test_worker_threads_explicit() {
         let mut config = ServerConfig::default();
         config.worker_threads = Some(8);
-        
+
         assert_eq!(config.get_worker_threads(), 8);
     }
 
     #[test]
     fn test_tls_detection() {
         let config = ServerConfig::default();
-        
+
         // Should default to false
         assert!(!config.should_enable_tls());
-        
+
         // Test with environment variable
         std::env::set_var("ENABLE_TLS", "true");
         assert!(config.should_enable_tls());
-        
+
         std::env::set_var("ENABLE_TLS", "false");
         assert!(!config.should_enable_tls());
-        
+
         // Clean up
         std::env::remove_var("ENABLE_TLS");
     }
@@ -609,12 +614,12 @@ mod tests {
     #[test]
     fn test_config_serialization() {
         let config = ServerConfig::default();
-        
+
         // Test JSON serialization
         let json = serde_json::to_string(&config).unwrap();
         assert!(json.contains("bind_addr"));
         assert!(json.contains("log_level"));
-        
+
         // Test deserialization
         let deserialized: ServerConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(deserialized.bind_addr.port(), config.bind_addr.port());
@@ -631,9 +636,9 @@ mod tests {
         std::env::set_var("WORKER_THREADS", "4");
         std::env::set_var("ENABLE_METRICS", "true");
         std::env::set_var("ENABLE_HEALTH_CHECK", "false");
-        
+
         let config = ServerConfig::from_env().unwrap();
-        
+
         assert_eq!(config.bind_addr.port(), 8080);
         assert_eq!(config.log_level, LogLevel::from(Level::DEBUG));
         assert_eq!(config.max_payload_size, 1048576);
@@ -641,7 +646,7 @@ mod tests {
         assert_eq!(config.worker_threads, Some(4));
         assert!(config.enable_metrics);
         assert!(!config.enable_health_check);
-        
+
         // Clean up
         std::env::remove_var("FERNET_WEB_BIND_ADDR");
         std::env::remove_var("LOG_LEVEL");
@@ -655,10 +660,10 @@ mod tests {
     #[test]
     fn test_from_env_invalid_values() {
         std::env::set_var("FERNET_WEB_BIND_ADDR", "invalid_address");
-        
+
         let result = ServerConfig::from_env();
         assert!(result.is_err());
-        
+
         std::env::remove_var("FERNET_WEB_BIND_ADDR");
     }
 }
