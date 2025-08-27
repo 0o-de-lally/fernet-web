@@ -213,7 +213,7 @@ async fn setup_shutdown_handler() {
 ///
 /// This function is used by the --version flag to display
 /// version and build information.
-fn print_version_info() {
+fn _print_version_info() {
     println!("Fernet Web Server v{}", fernet_web::VERSION);
     println!("Built with Rust {}", option_env!("RUSTC_VERSION").unwrap_or("unknown"));
     println!("Target: {}", option_env!("TARGET").unwrap_or("unknown"));
@@ -237,7 +237,7 @@ fn print_version_info() {
 ///
 /// Shows configuration summary and helpful tips for monitoring
 /// and troubleshooting the server.
-fn display_startup_info(config: &ServerConfig) {
+fn _display_startup_info(config: &ServerConfig) {
     info!("=== Fernet Web Server Configuration ===");
     info!("Version: {}", fernet_web::VERSION);
     info!("Bind Address: {}", config.bind_addr);
@@ -266,7 +266,7 @@ fn display_startup_info(config: &ServerConfig) {
 ///
 /// Sets up a panic hook that logs panic information and
 /// attempts to shut down gracefully rather than aborting.
-fn setup_panic_handler() {
+fn _setup_panic_handler() {
     std::panic::set_hook(Box::new(|panic_info| {
         let backtrace = std::backtrace::Backtrace::capture();
         
@@ -292,7 +292,7 @@ fn setup_panic_handler() {
 ///
 /// ## Returns
 /// Returns `Ok(())` if environment is valid, error otherwise
-fn validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
+fn _validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
     // Check available memory (basic check)
     if let Ok(memory_info) = std::fs::read_to_string("/proc/meminfo") {
         if let Some(line) = memory_info.lines().find(|l| l.starts_with("MemAvailable:")) {
@@ -337,13 +337,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_version_info_display() {
+    fn _test_version_info_display() {
         // Just test that version info doesn't panic
         print_version_info();
     }
 
     #[test]
-    fn test_runtime_validation() {
+    fn _test_runtime_validation() {
         // Test basic environment validation
         let result = validate_runtime_environment();
         // This might fail in some environments, so just test it doesn't panic
@@ -359,13 +359,13 @@ mod tests {
     }
 
     #[test]
-    fn test_panic_handler_setup() {
+    fn _test_panic_handler_setup() {
         // Just test that panic handler setup doesn't panic
         setup_panic_handler();
     }
 
     #[tokio::test]
-    async fn test_server_config_creation() {
+    async fn _test_server_config_creation() {
         let config = ServerConfig::from_args();
         // Should have reasonable defaults
         assert_eq!(config.bind_addr.port(), 7999);
@@ -373,7 +373,7 @@ mod tests {
     }
 
     #[test]
-    fn test_startup_info_display() {
+    fn _test_startup_info_display() {
         let config = ServerConfig::default();
         // Should not panic when displaying startup info
         display_startup_info(&config);
