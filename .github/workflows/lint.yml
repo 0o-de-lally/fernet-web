@@ -17,3 +17,6 @@ jobs:
           components: clippy
       - name: Run linter
         run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Check code format
+        run: cargo fmt -- --check
