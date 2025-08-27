@@ -25,12 +25,12 @@ use std::net::SocketAddr;
 use std::path::PathBuf;
 use tracing::{metadata::ParseLevelError, Level};
 
-/// Wrapper for tracing::Level to handle serialization/deserialization
+/// Wrapper for `tracing::Level` to handle serialization/deserialization
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LogLevel(Level);
 
 impl LogLevel {
-    pub fn inner(&self) -> Level {
+    #[must_use] pub fn inner(&self) -> Level {
         self.0
     }
 }
@@ -169,7 +169,7 @@ pub struct ServerConfig {
     /// Requests exceeding this size will be rejected with a 413 status code.
     ///
     /// ## Security
-    /// This limit prevents DoS attacks through large payloads.
+    /// This limit prevents `DoS` attacks through large payloads.
     /// Set according to your expected maximum payload size.
     ///
     /// ## Performance  
@@ -265,7 +265,7 @@ impl ServerConfig {
     /// let config = ServerConfig::default();
     /// assert_eq!(config.bind_addr.port(), 7999);
     /// ```
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self::default()
     }
 
@@ -284,7 +284,7 @@ impl ServerConfig {
     /// let config = ServerConfig::from_args();
     /// println!("Server will bind to: {}", config.bind_addr);
     /// ```
-    pub fn from_args() -> Self {
+    #[must_use] pub fn from_args() -> Self {
         Self::parse()
     }
 
@@ -302,7 +302,7 @@ impl ServerConfig {
         if let Ok(bind_addr) = std::env::var("FERNET_WEB_BIND_ADDR") {
             config.bind_addr = bind_addr.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid bind address '{}': {}", bind_addr, e),
+                    format!("Invalid bind address '{bind_addr}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -315,7 +315,7 @@ impl ServerConfig {
         if let Ok(log_level) = std::env::var("LOG_LEVEL") {
             config.log_level = log_level.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid log level '{}': {}", log_level, e),
+                    format!("Invalid log level '{log_level}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -324,7 +324,7 @@ impl ServerConfig {
         if let Ok(max_size) = std::env::var("MAX_PAYLOAD_SIZE") {
             config.max_payload_size = max_size.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid max payload size '{}': {}", max_size, e),
+                    format!("Invalid max payload size '{max_size}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -333,7 +333,7 @@ impl ServerConfig {
         if let Ok(timeout) = std::env::var("REQUEST_TIMEOUT_MS") {
             config.request_timeout_ms = timeout.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid request timeout '{}': {}", timeout, e),
+                    format!("Invalid request timeout '{timeout}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -342,7 +342,7 @@ impl ServerConfig {
         if let Ok(workers) = std::env::var("WORKER_THREADS") {
             config.worker_threads = Some(workers.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid worker threads '{}': {}", workers, e),
+                    format!("Invalid worker threads '{workers}': {e}"),
                     Some(Box::new(e)),
                 )
             })?);
@@ -351,7 +351,7 @@ impl ServerConfig {
         if let Ok(metrics) = std::env::var("ENABLE_METRICS") {
             config.enable_metrics = metrics.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid enable metrics '{}': {}", metrics, e),
+                    format!("Invalid enable metrics '{metrics}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -360,7 +360,7 @@ impl ServerConfig {
         if let Ok(health) = std::env::var("ENABLE_HEALTH_CHECK") {
             config.enable_health_check = health.parse().map_err(|e| {
                 FernetWebError::config_error(
-                    format!("Invalid enable health check '{}': {}", health, e),
+                    format!("Invalid enable health check '{health}': {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -460,7 +460,7 @@ impl ServerConfig {
     ///
     /// ## Returns
     /// Optimal worker thread count for this system
-    pub fn get_worker_threads(&self) -> usize {
+    #[must_use] pub fn get_worker_threads(&self) -> usize {
         self.worker_threads.unwrap_or_else(|| {
             // Default to 2x CPU count for I/O-bound workloads
             std::thread::available_parallelism()
@@ -477,7 +477,7 @@ impl ServerConfig {
     ///
     /// ## Returns
     /// Returns `true` if TLS should be enabled
-    pub fn should_enable_tls(&self) -> bool {
+    #[must_use] pub fn should_enable_tls(&self) -> bool {
         // For now, TLS is not implemented but this provides the interface
         std::env::var("ENABLE_TLS")
             .map(|v| v == "true")

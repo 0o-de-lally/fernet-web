@@ -54,7 +54,7 @@ impl CryptoService {
     }
 
     /// Get RSA public key in PEM format (stub)
-    pub fn get_public_key_pem(&self) -> &str {
+    #[must_use] pub fn get_public_key_pem(&self) -> &str {
         self.rsa_handler.get_public_key_pem()
     }
 
@@ -64,7 +64,7 @@ impl CryptoService {
     }
 
     /// Get performance metrics (stub)
-    pub fn get_metrics(&self) -> CryptoMetrics {
+    #[must_use] pub fn get_metrics(&self) -> CryptoMetrics {
         CryptoMetrics {
             rsa_operations: self.rsa_handler.get_operation_count(),
             fernet_operations: self.fernet_handler.get_operation_count(),
@@ -84,7 +84,7 @@ pub struct CryptoMetrics {
 }
 
 impl CryptoMetrics {
-    pub fn average_latency_ms(&self) -> f64 {
+    #[must_use] pub fn average_latency_ms(&self) -> f64 {
         let total_ops = self.rsa_operations + self.fernet_operations;
         if total_ops == 0 {
             0.0
@@ -93,7 +93,7 @@ impl CryptoMetrics {
         }
     }
 
-    pub fn error_rate_percent(&self) -> f64 {
+    #[must_use] pub fn error_rate_percent(&self) -> f64 {
         let total_ops = self.rsa_operations + self.fernet_operations;
         if total_ops == 0 {
             0.0

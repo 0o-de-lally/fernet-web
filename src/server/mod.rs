@@ -122,7 +122,7 @@ impl FernetWebServer {
         let listener = TcpListener::bind(bind_addr).await.map_err(|e| {
             error!("Failed to bind to address {}: {}", bind_addr, e);
             FernetWebError::server_error(
-                format!("Failed to bind to address {}: {}", bind_addr, e),
+                format!("Failed to bind to address {bind_addr}: {e}"),
                 Some(Box::new(e)),
             )
         })?;
@@ -138,7 +138,7 @@ impl FernetWebServer {
             let (stream, remote_addr) = listener.accept().await.map_err(|e| {
                 error!("Failed to accept connection: {}", e);
                 FernetWebError::server_error(
-                    format!("Failed to accept connection: {}", e),
+                    format!("Failed to accept connection: {e}"),
                     Some(Box::new(e)),
                 )
             })?;
@@ -253,7 +253,7 @@ impl FernetWebServer {
 
         let response_body = serde_json::to_string(&health_status).map_err(|e| {
             FernetWebError::internal_error(
-                format!("Failed to serialize health status: {}", e),
+                format!("Failed to serialize health status: {e}"),
                 Some(Box::new(e)),
             )
         })?;
@@ -386,7 +386,7 @@ pub async fn start_server(config: ServerConfig) -> Result<()> {
 // Implement From<hyper::http::Error> for convenient error handling
 impl From<hyper::http::Error> for FernetWebError {
     fn from(err: hyper::http::Error) -> Self {
-        Self::server_error(format!("HTTP error: {}", err), Some(Box::new(err)))
+        Self::server_error(format!("HTTP error: {err}"), Some(Box::new(err)))
     }
 }
 
@@ -398,7 +398,7 @@ mod tests {
     use tempfile::NamedTempFile;
 
     // Test RSA key for development/testing
-    const TEST_RSA_KEY: &str = r#"-----BEGIN RSA PRIVATE KEY-----
+    const TEST_RSA_KEY: &str = r"-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6
 zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQK
 CAQEAsamplekeyfortest4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNL
@@ -406,11 +406,11 @@ O6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBA
 QKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNk
 yTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiW
 jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
------END RSA PRIVATE KEY-----"#;
+-----END RSA PRIVATE KEY-----";
 
     async fn create_test_server_config() -> Result<ServerConfig> {
         let mut temp_file = NamedTempFile::new().unwrap();
-        write!(temp_file, "{}", TEST_RSA_KEY).unwrap();
+        write!(temp_file, "{TEST_RSA_KEY}").unwrap();
 
         let config = ServerConfig {
             bind_addr: SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), 0), // Use port 0 for testing
@@ -481,8 +481,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             .authority("example.com")
             .path_and_query("/")
             .build()
-            .unwrap_err()
-            .into();
+            .unwrap_err();
         let fernet_error: FernetWebError = http_error.into();
 
         assert_eq!(fernet_error.status_code(), 500);

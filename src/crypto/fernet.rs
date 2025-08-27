@@ -13,7 +13,7 @@ pub struct FernetDecryptor {
 }
 
 impl FernetDecryptor {
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             operation_count: AtomicU64::new(0),
         }
@@ -71,7 +71,7 @@ impl FernetKey {
     pub fn from_string(key_string: String) -> Result<Self> {
         let decoded = BASE64_URL_SAFE
             .decode(&key_string)
-            .map_err(|e| FernetWebError::fernet_error(format!("Invalid base64: {}", e), None))?;
+            .map_err(|e| FernetWebError::fernet_error(format!("Invalid base64: {e}"), None))?;
 
         if decoded.len() != 32 {
             return Err(FernetWebError::fernet_error(
@@ -83,18 +83,18 @@ impl FernetKey {
         Ok(Self { key_string })
     }
 
-    pub fn get_key_string(&self) -> &str {
+    #[must_use] pub fn get_key_string(&self) -> &str {
         &self.key_string
     }
 
     pub fn get_key_bytes(&self) -> Result<Vec<u8>> {
         BASE64_URL_SAFE
             .decode(&self.key_string)
-            .map_err(|e| FernetWebError::fernet_error(format!("Failed to decode key: {}", e), None))
+            .map_err(|e| FernetWebError::fernet_error(format!("Failed to decode key: {e}"), None))
     }
 
     #[cfg(test)]
-    pub fn generate_random() -> Self {
+    #[must_use] pub fn generate_random() -> Self {
         use rand::RngCore;
         let mut key_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut key_bytes);

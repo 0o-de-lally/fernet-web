@@ -82,7 +82,7 @@ pub const DEFAULT_PORT: u16 = 7999;
 /// Default bind address for the server
 pub const DEFAULT_BIND_ADDR: &str = "0.0.0.0";
 
-/// Maximum payload size in bytes (16MB to prevent DoS attacks)
+/// Maximum payload size in bytes (16MB to prevent `DoS` attacks)
 ///
 /// This limit prevents memory exhaustion attacks while allowing
 /// reasonable payload sizes for most use cases.

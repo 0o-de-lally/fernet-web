@@ -50,7 +50,7 @@ impl DecryptHandler {
     ///
     /// ## Returns
     /// Returns a new `DecryptHandler` instance
-    pub fn new(crypto_service: Arc<CryptoService>) -> Self {
+    #[must_use] pub fn new(crypto_service: Arc<CryptoService>) -> Self {
         Self { crypto_service }
     }
 
@@ -104,7 +104,7 @@ impl DecryptHandler {
             .await
             .map_err(|e| {
                 warn!("Failed to read request body from {}: {}", remote_addr, e);
-                FernetWebError::request_error(format!("Failed to read request body: {}", e))
+                FernetWebError::request_error(format!("Failed to read request body: {e}"))
             })?
             .to_bytes();
 
@@ -131,7 +131,7 @@ impl DecryptHandler {
         // Convert body bytes to string for Fernet token processing
         let encrypted_payload = String::from_utf8(body_bytes.to_vec()).map_err(|e| {
             warn!("Invalid UTF-8 in payload from {}: {}", remote_addr, e);
-            FernetWebError::request_error(format!("Invalid payload encoding: {}", e))
+            FernetWebError::request_error(format!("Invalid payload encoding: {e}"))
         })?;
 
         // Step 1: Decrypt the symmetric key using RSA
@@ -219,13 +219,12 @@ impl DecryptHandler {
         headers
             .get(header_name)
             .ok_or_else(|| {
-                FernetWebError::request_error(format!("Missing required header: {}", header_name))
+                FernetWebError::request_error(format!("Missing required header: {header_name}"))
             })?
             .to_str()
             .map_err(|e| {
                 FernetWebError::request_error(format!(
-                    "Invalid header value for {}: {}",
-                    header_name, e
+                    "Invalid header value for {header_name}: {e}"
                 ))
             })
     }
@@ -357,7 +356,7 @@ impl HandlerRegistry {
     ///
     /// ## Returns
     /// Returns a new `HandlerRegistry` instance
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self {
             routes: HashMap::new(),
             decrypt_handler: None,
@@ -405,7 +404,7 @@ impl HandlerRegistry {
     ///
     /// ## Returns
     /// Returns vector of all registered route patterns
-    pub fn get_routes(&self) -> Vec<String> {
+    #[must_use] pub fn get_routes(&self) -> Vec<String> {
         self.routes.keys().cloned().collect()
     }
 }
@@ -426,7 +425,7 @@ mod tests {
     use std::str::FromStr;
     use tempfile::NamedTempFile;
 
-    const TEST_RSA_KEY: &str = r#"-----BEGIN RSA PRIVATE KEY-----
+    const TEST_RSA_KEY: &str = r"-----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6
 zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQK
 CAQEAsamplekeyfortest4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNL
@@ -434,11 +433,11 @@ O6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBA
 QKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNk
 yTCBPOI+R+wIBAQKCAQEA4qiWjNLO6zI6O4r1wNkyTCBPOI+R+wIBAQKCAQEA4qiW
 jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
------END RSA PRIVATE KEY-----"#;
+-----END RSA PRIVATE KEY-----";
 
     async fn create_test_crypto_service() -> Arc<CryptoService> {
         let mut temp_file = NamedTempFile::new().unwrap();
-        write!(temp_file, "{}", TEST_RSA_KEY).unwrap();
+        write!(temp_file, "{TEST_RSA_KEY}").unwrap();
 
         // For testing, we'll create a crypto service that uses stubs
         Arc::new(CryptoService::new(temp_file.path()).await.unwrap())
@@ -450,7 +449,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
         let handler = DecryptHandler::new(crypto_service);
 
         // Just test creation for now
-        assert!(format!("{:?}", handler).contains("DecryptHandler"));
+        assert!(format!("{handler:?}").contains("DecryptHandler"));
     }
 
     #[test]
@@ -557,7 +556,7 @@ jNLO6zI6O4r1wNkyTCBPOI+R+wIBAQ==
             miner_hotkey: "miner".to_string(),
         };
 
-        let debug_str = format!("{:?}", headers);
+        let debug_str = format!("{headers:?}");
         assert!(debug_str.contains("test-uuid"));
         assert!(debug_str.contains("validator"));
         assert!(debug_str.contains("miner"));

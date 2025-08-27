@@ -8,7 +8,7 @@
 //! - **Request Logging**: Structured logging for all requests
 //! - **Metrics Collection**: Performance metrics for monitoring
 //! - **Security Headers**: Security-focused response headers
-//! - **Rate Limiting**: Future implementation for DoS protection
+//! - **Rate Limiting**: Future implementation for `DoS` protection
 
 use std::time::Instant;
 use tracing::{info, warn};
@@ -25,7 +25,7 @@ pub struct RequestMiddleware {
 
 impl RequestMiddleware {
     /// Create new request middleware instance
-    pub fn new() -> Self {
+    #[must_use] pub fn new() -> Self {
         Self { start_time: None }
     }
 
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn test_debug_formatting() {
         let middleware = RequestMiddleware::new();
-        let debug_str = format!("{:?}", middleware);
+        let debug_str = format!("{middleware:?}");
         assert!(debug_str.contains("RequestMiddleware"));
     }
 

@@ -17,7 +17,7 @@ pub struct RsaKeyExchange {
 
 impl RsaKeyExchange {
     /// Create a new RSA key exchange handler (stub)
-    pub fn new_stub() -> Self {
+    #[must_use] pub fn new_stub() -> Self {
         Self {
             public_key_pem: "-----BEGIN PUBLIC KEY-----\nSTUB_KEY\n-----END PUBLIC KEY-----"
                 .to_string(),
@@ -33,7 +33,7 @@ impl RsaKeyExchange {
         // Simple base64 decode as stub
         BASE64
             .decode(encrypted_key)
-            .map_err(|e| FernetWebError::request_error(format!("Invalid base64 encoding: {}", e)))
+            .map_err(|e| FernetWebError::request_error(format!("Invalid base64 encoding: {e}")))
     }
 
     /// Get the public key in PEM format
@@ -59,7 +59,7 @@ pub struct RsaPublicKey {
 }
 
 impl RsaPublicKey {
-    pub fn from_pem(pem_data: String) -> Self {
+    #[must_use] pub fn from_pem(pem_data: String) -> Self {
         Self { pem_data }
     }
 
@@ -67,7 +67,7 @@ impl RsaPublicKey {
         Ok(BASE64.encode(data).into_bytes())
     }
 
-    pub fn to_pem(&self) -> &str {
+    #[must_use] pub fn to_pem(&self) -> &str {
         &self.pem_data
     }
 }

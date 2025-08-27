@@ -291,7 +291,7 @@ impl FernetWebError {
     /// ## Performance
     /// This is a constant-time operation with no allocations
     #[inline]
-    pub fn status_code(&self) -> u16 {
+    #[must_use] pub fn status_code(&self) -> u16 {
         match self {
             Self::RsaError { .. } | Self::FernetError { .. } => 401,
             Self::RequestError { .. } => 400,
@@ -314,7 +314,7 @@ impl FernetWebError {
     /// ## Performance
     /// Returns `&'static str` for zero-allocation responses
     #[inline]
-    pub fn client_message(&self) -> &'static str {
+    #[must_use] pub fn client_message(&self) -> &'static str {
         match self {
             Self::RsaError { .. } => "Authentication failed",
             Self::FernetError { .. } => "Decryption failed",
@@ -335,7 +335,7 @@ impl FernetWebError {
     /// This message may contain sensitive information and should
     /// only be used for internal logging with appropriate access controls.
     #[inline]
-    pub fn internal_message(&self) -> &str {
+    #[must_use] pub fn internal_message(&self) -> &str {
         match self {
             Self::RsaError { message, .. } => message,
             Self::FernetError { message, .. } => message,
@@ -355,7 +355,7 @@ impl FernetWebError {
     /// ## Performance
     /// This is a constant-time operation
     #[inline]
-    pub fn is_critical(&self) -> bool {
+    #[must_use] pub fn is_critical(&self) -> bool {
         match self {
             Self::RequestError { .. } => false, // Expected client errors
             Self::RsaError { .. } | Self::FernetError { .. } => true, // Crypto failures are serious
@@ -366,12 +366,12 @@ impl FernetWebError {
     }
 }
 
-/// Helper trait for converting common error types to FernetWebError
+/// Helper trait for converting common error types to `FernetWebError`
 ///
 /// This trait provides convenient conversions from standard library
 /// and third-party error types to our custom error enum.
 pub trait IntoFernetWebError {
-    /// Convert this error into a FernetWebError
+    /// Convert this error into a `FernetWebError`
     fn into_fernet_error(self) -> FernetWebError;
 }
 
@@ -379,21 +379,21 @@ pub trait IntoFernetWebError {
 impl From<std::io::Error> for FernetWebError {
     #[inline]
     fn from(err: std::io::Error) -> Self {
-        Self::server_error(format!("I/O error: {}", err), Some(Box::new(err)))
+        Self::server_error(format!("I/O error: {err}"), Some(Box::new(err)))
     }
 }
 
 impl From<serde_json::Error> for FernetWebError {
     #[inline]
     fn from(err: serde_json::Error) -> Self {
-        Self::request_error(format!("JSON parsing error: {}", err))
+        Self::request_error(format!("JSON parsing error: {err}"))
     }
 }
 
 impl From<hyper::Error> for FernetWebError {
     #[inline]
     fn from(err: hyper::Error) -> Self {
-        Self::server_error(format!("Hyper error: {}", err), Some(Box::new(err)))
+        Self::server_error(format!("Hyper error: {err}"), Some(Box::new(err)))
     }
 }
 
@@ -478,7 +478,7 @@ mod tests {
     #[test]
     fn test_error_display() {
         let err = FernetWebError::rsa_error("test error", None);
-        let display_str = format!("{}", err);
+        let display_str = format!("{err}");
         assert!(display_str.contains("RSA operation failed"));
         assert!(display_str.contains("test error"));
     }
