@@ -19,7 +19,6 @@
 //! - **Structured Logging**: Errors include context for observability
 //! - **Thread Safe**: All error types implement `Send + Sync`
 
-use std::fmt;
 use thiserror::Error;
 
 /// Result type alias for the Fernet Web library

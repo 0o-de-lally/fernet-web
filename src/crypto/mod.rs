@@ -13,7 +13,7 @@ pub mod rsa;
 pub use fernet::{FernetDecryptor, FernetKey};
 pub use rsa::{RsaKeyExchange, RsaPublicKey};
 
-use crate::error::{FernetWebError, Result};
+use crate::error::Result;
 use std::sync::Arc;
 
 /// High-level cryptographic service (stub implementation)

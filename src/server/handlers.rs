@@ -19,7 +19,7 @@ use hyper::{HeaderMap, Request, Response, StatusCode};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, instrument, warn};
 
 /// Handler for decrypt endpoint requests
 ///
