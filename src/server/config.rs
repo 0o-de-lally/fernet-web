@@ -26,11 +26,14 @@ use std::path::PathBuf;
 use tracing::{metadata::ParseLevelError, Level};
 
 /// Wrapper for `tracing::Level` to handle serialization/deserialization
+/// Used for logging configuration in the server.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LogLevel(Level);
 
 impl LogLevel {
-    #[must_use] pub fn inner(&self) -> Level {
+    /// Returns the inner `tracing::Level` value.
+    #[must_use]
+    pub fn inner(&self) -> Level {
         self.0
     }
 }

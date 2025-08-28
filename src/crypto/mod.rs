@@ -76,15 +76,22 @@ impl CryptoService {
 
 /// Performance metrics for cryptographic operations (stub)
 #[derive(Debug, Clone, Copy)]
+/// Performance metrics for cryptographic operations
 pub struct CryptoMetrics {
+    /// Number of RSA operations performed
     pub rsa_operations: u64,
+    /// Number of Fernet operations performed
     pub fernet_operations: u64,
+    /// Total latency in milliseconds
     pub total_latency_ms: u64,
+    /// Number of errors encountered
     pub error_count: u64,
 }
 
 impl CryptoMetrics {
-    #[must_use] pub fn average_latency_ms(&self) -> f64 {
+    /// Returns the average latency per operation in milliseconds
+    #[must_use]
+    pub fn average_latency_ms(&self) -> f64 {
         let total_ops = self.rsa_operations + self.fernet_operations;
         if total_ops == 0 {
             0.0
@@ -93,7 +100,9 @@ impl CryptoMetrics {
         }
     }
 
-    #[must_use] pub fn error_rate_percent(&self) -> f64 {
+    /// Returns the error rate as a percentage of total operations
+    #[must_use]
+    pub fn error_rate_percent(&self) -> f64 {
         let total_ops = self.rsa_operations + self.fernet_operations;
         if total_ops == 0 {
             0.0

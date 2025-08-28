@@ -42,7 +42,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilte
 /// All errors are logged and the process exits with appropriate exit codes:
 /// - 0: Clean shutdown
 /// - 1: Configuration error
-/// - 2: Server startup error  
+/// - 2: Server startup error
 /// - 3: Runtime error
 ///
 /// ## Signal Handling

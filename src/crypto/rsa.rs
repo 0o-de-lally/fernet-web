@@ -7,6 +7,7 @@ use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// RSA key exchange handler (stub implementation)
+/// Provides RSA cryptographic operations for key exchange.
 #[derive(Debug)]
 pub struct RsaKeyExchange {
     /// Cached public key in PEM format
@@ -16,8 +17,9 @@ pub struct RsaKeyExchange {
 }
 
 impl RsaKeyExchange {
-    /// Create a new RSA key exchange handler (stub)
-    #[must_use] pub fn new_stub() -> Self {
+    /// Creates a new RSA key exchange handler (stub).
+    #[must_use]
+    pub fn new_stub() -> Self {
         Self {
             public_key_pem: "-----BEGIN PUBLIC KEY-----\nSTUB_KEY\n-----END PUBLIC KEY-----"
                 .to_string(),
@@ -25,7 +27,8 @@ impl RsaKeyExchange {
         }
     }
 
-    /// Decrypt a symmetric key (stub implementation)
+    /// Decrypts a symmetric key (stub implementation).
+    /// Returns the decrypted key bytes or an error if decoding fails.
     pub async fn decrypt_symmetric_key(&self, encrypted_key: &str) -> Result<Vec<u8>> {
         // Increment operation count
         self.operation_count.fetch_add(1, Ordering::Relaxed);
@@ -36,7 +39,7 @@ impl RsaKeyExchange {
             .map_err(|e| FernetWebError::request_error(format!("Invalid base64 encoding: {e}")))
     }
 
-    /// Get the public key in PEM format
+    /// Returns the public key in PEM format.
     pub fn get_public_key_pem(&self) -> &str {
         &self.public_key_pem
     }
@@ -59,15 +62,22 @@ pub struct RsaPublicKey {
 }
 
 impl RsaPublicKey {
-    #[must_use] pub fn from_pem(pem_data: String) -> Self {
+    /// Creates an RsaPublicKey from PEM data.
+    /// Returns the public key instance.
+    #[must_use]
+    pub fn from_pem(pem_data: String) -> Self {
         Self { pem_data }
     }
 
+    /// Encrypts data using the public key.
+    /// Returns a Result containing the encrypted bytes or an error.
     pub fn encrypt(&self, data: &[u8]) -> Result<Vec<u8>> {
         Ok(BASE64.encode(data).into_bytes())
     }
 
-    #[must_use] pub fn to_pem(&self) -> &str {
+    /// Returns the public key as a PEM string slice.
+    #[must_use]
+    pub fn to_pem(&self) -> &str {
         &self.pem_data
     }
 }

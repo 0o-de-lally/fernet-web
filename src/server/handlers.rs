@@ -1,4 +1,4 @@
-//! # Request Handlers Module  
+//! # Request Handlers Module
 //!
 //! This module contains HTTP request handlers for the Fernet web server.
 //! Each handler is responsible for processing specific endpoint requests
@@ -236,7 +236,7 @@ impl DecryptHandler {
     ///
     /// ## Parameters
     /// - `symmetric_key_uuid`: UUID string to validate
-    /// - `validator_hotkey`: Validator hotkey to validate  
+    /// - `validator_hotkey`: Validator hotkey to validate
     /// - `miner_hotkey`: Miner hotkey to validate
     ///
     /// ## Returns
@@ -300,12 +300,13 @@ impl DecryptHandler {
 /// This struct contains all the required headers for processing
 /// decrypt requests, validated for format and security.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 struct DecryptRequestHeaders {
     /// Symmetric key identifier (used as encrypted symmetric key)
     symmetric_key_uuid: String,
     /// Validator identification hotkey
     validator_hotkey: String,
-    /// Miner identification hotkey  
+    /// Miner identification hotkey
     miner_hotkey: String,
 }
 
@@ -313,6 +314,7 @@ struct DecryptRequestHeaders {
 ///
 /// This trait allows for consistent handler interfaces and
 /// makes it easy to add new endpoint handlers in the future.
+#[allow(async_fn_in_trait)]
 pub trait RequestHandler: Send + Sync {
     /// Handle an HTTP request
     ///

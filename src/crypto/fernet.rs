@@ -7,18 +7,23 @@ use base64::{engine::general_purpose::URL_SAFE as BASE64_URL_SAFE, Engine};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Fernet decryptor (stub implementation)
+/// Provides Fernet symmetric encryption/decryption operations.
 #[derive(Debug)]
 pub struct FernetDecryptor {
     operation_count: AtomicU64,
 }
 
 impl FernetDecryptor {
-    #[must_use] pub fn new() -> Self {
+    /// Creates a new FernetDecryptor instance.
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             operation_count: AtomicU64::new(0),
         }
     }
 
+    /// Decrypts a payload using the provided symmetric key.
+    /// Returns the decrypted bytes or an error if the key is invalid.
     pub async fn decrypt_payload(
         &self,
         symmetric_key: &[u8],
@@ -38,6 +43,7 @@ impl FernetDecryptor {
         Ok(encrypted_payload.as_bytes().to_vec())
     }
 
+    /// Returns the number of operations performed by this decryptor.
     pub fn get_operation_count(&self) -> u64 {
         self.operation_count.load(Ordering::Relaxed)
     }
@@ -56,6 +62,8 @@ pub struct FernetKey {
 }
 
 impl FernetKey {
+    /// Creates a FernetKey from a byte slice.
+    /// Returns a Result containing the key or an error if invalid.
     pub fn from_bytes(key_bytes: &[u8]) -> Result<Self> {
         if key_bytes.len() != 32 {
             return Err(FernetWebError::fernet_error(
@@ -68,6 +76,8 @@ impl FernetKey {
         Ok(Self { key_string })
     }
 
+    /// Creates a FernetKey from a string.
+    /// Returns a Result containing the key or an error if invalid.
     pub fn from_string(key_string: String) -> Result<Self> {
         let decoded = BASE64_URL_SAFE
             .decode(&key_string)
@@ -83,10 +93,14 @@ impl FernetKey {
         Ok(Self { key_string })
     }
 
-    #[must_use] pub fn get_key_string(&self) -> &str {
+    /// Returns the key as a string slice.
+    #[must_use]
+    pub fn get_key_string(&self) -> &str {
         &self.key_string
     }
 
+    /// Returns the key as a byte vector.
+    /// Returns a Result containing the bytes or an error if invalid.
     pub fn get_key_bytes(&self) -> Result<Vec<u8>> {
         BASE64_URL_SAFE
             .decode(&self.key_string)
