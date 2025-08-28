@@ -291,7 +291,8 @@ impl FernetWebError {
     /// ## Performance
     /// This is a constant-time operation with no allocations
     #[inline]
-    #[must_use] pub fn status_code(&self) -> u16 {
+    #[must_use]
+    pub fn status_code(&self) -> u16 {
         match self {
             Self::RsaError { .. } | Self::FernetError { .. } => 401,
             Self::RequestError { .. } => 400,
@@ -314,7 +315,8 @@ impl FernetWebError {
     /// ## Performance
     /// Returns `&'static str` for zero-allocation responses
     #[inline]
-    #[must_use] pub fn client_message(&self) -> &'static str {
+    #[must_use]
+    pub fn client_message(&self) -> &'static str {
         match self {
             Self::RsaError { .. } => "Authentication failed",
             Self::FernetError { .. } => "Decryption failed",
@@ -335,7 +337,8 @@ impl FernetWebError {
     /// This message may contain sensitive information and should
     /// only be used for internal logging with appropriate access controls.
     #[inline]
-    #[must_use] pub fn internal_message(&self) -> &str {
+    #[must_use]
+    pub fn internal_message(&self) -> &str {
         match self {
             Self::RsaError { message, .. } => message,
             Self::FernetError { message, .. } => message,
@@ -355,7 +358,8 @@ impl FernetWebError {
     /// ## Performance
     /// This is a constant-time operation
     #[inline]
-    #[must_use] pub fn is_critical(&self) -> bool {
+    #[must_use]
+    pub fn is_critical(&self) -> bool {
         match self {
             Self::RequestError { .. } => false, // Expected client errors
             Self::RsaError { .. } | Self::FernetError { .. } => true, // Crypto failures are serious

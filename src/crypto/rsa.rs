@@ -62,7 +62,7 @@ pub struct RsaPublicKey {
 }
 
 impl RsaPublicKey {
-    /// Creates an RsaPublicKey from PEM data.
+    /// Creates an `RsaPublicKey` from PEM data.
     /// Returns the public key instance.
     #[must_use]
     pub fn from_pem(pem_data: String) -> Self {

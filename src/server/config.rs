@@ -268,7 +268,8 @@ impl ServerConfig {
     /// let config = ServerConfig::default();
     /// assert_eq!(config.bind_addr.port(), 7999);
     /// ```
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self::default()
     }
 
@@ -287,7 +288,8 @@ impl ServerConfig {
     /// let config = ServerConfig::from_args();
     /// println!("Server will bind to: {}", config.bind_addr);
     /// ```
-    #[must_use] pub fn from_args() -> Self {
+    #[must_use]
+    pub fn from_args() -> Self {
         Self::parse()
     }
 
@@ -463,7 +465,8 @@ impl ServerConfig {
     ///
     /// ## Returns
     /// Optimal worker thread count for this system
-    #[must_use] pub fn get_worker_threads(&self) -> usize {
+    #[must_use]
+    pub fn get_worker_threads(&self) -> usize {
         self.worker_threads.unwrap_or_else(|| {
             // Default to 2x CPU count for I/O-bound workloads
             std::thread::available_parallelism()
@@ -480,7 +483,8 @@ impl ServerConfig {
     ///
     /// ## Returns
     /// Returns `true` if TLS should be enabled
-    #[must_use] pub fn should_enable_tls(&self) -> bool {
+    #[must_use]
+    pub fn should_enable_tls(&self) -> bool {
         // For now, TLS is not implemented but this provides the interface
         std::env::var("ENABLE_TLS")
             .map(|v| v == "true")

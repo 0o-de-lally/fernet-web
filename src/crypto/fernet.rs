@@ -14,7 +14,7 @@ pub struct FernetDecryptor {
 }
 
 impl FernetDecryptor {
-    /// Creates a new FernetDecryptor instance.
+    /// Creates a new `FernetDecryptor` instance.
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -62,7 +62,7 @@ pub struct FernetKey {
 }
 
 impl FernetKey {
-    /// Creates a FernetKey from a byte slice.
+    /// Creates a `FernetKey` from a byte slice.
     /// Returns a Result containing the key or an error if invalid.
     pub fn from_bytes(key_bytes: &[u8]) -> Result<Self> {
         if key_bytes.len() != 32 {
@@ -76,7 +76,7 @@ impl FernetKey {
         Ok(Self { key_string })
     }
 
-    /// Creates a FernetKey from a string.
+    /// Creates a `FernetKey` from a string.
     /// Returns a Result containing the key or an error if invalid.
     pub fn from_string(key_string: String) -> Result<Self> {
         let decoded = BASE64_URL_SAFE
@@ -108,7 +108,8 @@ impl FernetKey {
     }
 
     #[cfg(test)]
-    #[must_use] pub fn generate_random() -> Self {
+    #[must_use]
+    pub fn generate_random() -> Self {
         use rand::RngCore;
         let mut key_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut key_bytes);

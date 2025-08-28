@@ -54,7 +54,8 @@ impl CryptoService {
     }
 
     /// Get RSA public key in PEM format (stub)
-    #[must_use] pub fn get_public_key_pem(&self) -> &str {
+    #[must_use]
+    pub fn get_public_key_pem(&self) -> &str {
         self.rsa_handler.get_public_key_pem()
     }
 
@@ -64,7 +65,8 @@ impl CryptoService {
     }
 
     /// Get performance metrics (stub)
-    #[must_use] pub fn get_metrics(&self) -> CryptoMetrics {
+    #[must_use]
+    pub fn get_metrics(&self) -> CryptoMetrics {
         CryptoMetrics {
             rsa_operations: self.rsa_handler.get_operation_count(),
             fernet_operations: self.fernet_handler.get_operation_count(),

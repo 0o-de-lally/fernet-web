@@ -30,9 +30,11 @@
 use fernet_web::{server::ServerConfig, start_server};
 use std::process;
 use tokio::signal;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
+#[cfg(test)]
+use tracing::warn;
 /// Main entry point for the Fernet web server
 ///
 /// This function sets up logging, parses configuration, and starts the server
@@ -213,7 +215,9 @@ async fn setup_shutdown_handler() {
 ///
 /// This function is used by the --version flag to display
 /// version and build information.
-fn _print_version_info() {
+
+#[cfg(test)]
+fn print_version_info() {
     println!("Fernet Web Server v{}", fernet_web::VERSION);
     println!(
         "Built with Rust {}",
@@ -240,7 +244,7 @@ fn _print_version_info() {
 ///
 /// Shows configuration summary and helpful tips for monitoring
 /// and troubleshooting the server.
-fn _display_startup_info(config: &ServerConfig) {
+pub fn display_startup_info(config: &ServerConfig) {
     info!("=== Fernet Web Server Configuration ===");
     info!("Version: {}", fernet_web::VERSION);
     info!("Bind Address: {}", config.bind_addr);
@@ -286,7 +290,8 @@ fn _display_startup_info(config: &ServerConfig) {
 ///
 /// Sets up a panic hook that logs panic information and
 /// attempts to shut down gracefully rather than aborting.
-fn _setup_panic_handler() {
+#[cfg(test)]
+fn setup_panic_handler() {
     std::panic::set_hook(Box::new(|panic_info| {
         let backtrace = std::backtrace::Backtrace::capture();
 
@@ -315,7 +320,8 @@ fn _setup_panic_handler() {
 ///
 /// ## Returns
 /// Returns `Ok(())` if environment is valid, error otherwise
-fn _validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
+#[cfg(test)]
+fn validate_runtime_environment() -> Result<(), Box<dyn std::error::Error>> {
     // Check available memory (basic check)
     if let Ok(memory_info) = std::fs::read_to_string("/proc/meminfo") {
         if let Some(line) = memory_info.lines().find(|l| l.starts_with("MemAvailable:")) {

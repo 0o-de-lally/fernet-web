@@ -25,7 +25,8 @@ pub struct RequestMiddleware {
 
 impl RequestMiddleware {
     /// Create new request middleware instance
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self { start_time: None }
     }
 

@@ -50,7 +50,8 @@ impl DecryptHandler {
     ///
     /// ## Returns
     /// Returns a new `DecryptHandler` instance
-    #[must_use] pub fn new(crypto_service: Arc<CryptoService>) -> Self {
+    #[must_use]
+    pub fn new(crypto_service: Arc<CryptoService>) -> Self {
         Self { crypto_service }
     }
 
@@ -358,7 +359,8 @@ impl HandlerRegistry {
     ///
     /// ## Returns
     /// Returns a new `HandlerRegistry` instance
-    #[must_use] pub fn new() -> Self {
+    #[must_use]
+    pub fn new() -> Self {
         Self {
             routes: HashMap::new(),
             decrypt_handler: None,
@@ -406,7 +408,8 @@ impl HandlerRegistry {
     ///
     /// ## Returns
     /// Returns vector of all registered route patterns
-    #[must_use] pub fn get_routes(&self) -> Vec<String> {
+    #[must_use]
+    pub fn get_routes(&self) -> Vec<String> {
         self.routes.keys().cloned().collect()
     }
 }
