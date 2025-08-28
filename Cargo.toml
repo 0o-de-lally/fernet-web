@@ -29,7 +29,7 @@ http = "1.0"
 http-body-util = "0.1"
 
 # Basic utilities
-base64 = "0.21"
+base64 = "0.22"
 rand = "0.8"
 
 # Serialization
@@ -38,7 +38,6 @@ serde_json = "1.0"
 
 # Error handling
 thiserror = "1.0"
-anyhow = "1.0"
 
 # Logging
 tracing = "0.1"
@@ -48,14 +47,12 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "json"]
 clap = { version = "4.0", features = ["derive", "env"] }
 
 # Utilities
-bytes = "1.0"
-uuid = { version = "1.0", features = ["v4", "serde"] }
 
 [dev-dependencies]
 # Testing framework
 tokio-test = "0.4"
-tempfile = "3.0"
-criterion = { version = "0.4", features = ["html_reports"] }
+tempfile = "3.10"
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [features]
 default = []
